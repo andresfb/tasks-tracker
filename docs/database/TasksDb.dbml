@@ -1,0 +1,51 @@
+Table categories {
+	id guid [not null]
+	name varchar(100) [not null]
+	deleted_at timestamp
+	created_at timestamp
+	updated_at timestamp
+}
+
+Table tasks {
+	id guid [not null]
+	category_id guid [ref: > categories.id]
+	parent_id guid [ref: > tasks.id]
+	title varchar(100) [not null]
+	status int [not null]
+	notes text
+	deleted_at timestamp
+	created_at timestamp
+	updated_at timestamp	
+}
+
+Table task_links {
+	id guid [not null]
+	deleted_at timestamp
+	created_at timestamp
+	updated_at timestamp	
+}
+
+Table tags {
+	id guid [not null]
+	title varchar(100) [not null]
+	deleted_at timestamp
+	created_at timestamp
+	updated_at timestamp
+}
+
+Table task_tags {
+	id guid [not null]
+	tasks_id guid [ref: > etries.id]
+	tag_id guid [ref: > tags.id]
+	deleted_at timestamp
+	created_at timestamp
+	updated_at timestamp
+}
+
+Enum statuses {
+	created
+	started
+	delayed
+	rejected
+	completed
+}
