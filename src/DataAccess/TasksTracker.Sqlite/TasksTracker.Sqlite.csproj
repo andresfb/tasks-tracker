@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TasksTracker.Contracts\TasksTracker.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Dapper" Version="2.0.123" />
+      <PackageReference Include="Dapper.Scripts" Version="2.3.2" />
+      <PackageReference Include="Humanizer.Core" Version="2.13.14" />
+      <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Queries\Base\GetList.sql" />
+      <EmbeddedResource Include="Queries\Base\GetList.sql" />
+      <None Remove="Queries\Base\DeleteRecord.sql" />
+      <EmbeddedResource Include="Queries\Base\DeleteRecord.sql" />
+      <None Remove="Queries\Base\GetPaginatedList.sql" />
+      <EmbeddedResource Include="Queries\Base\GetPaginatedList.sql" />
+      <None Remove="Queries\Base\GetRecord.sql" />
+      <EmbeddedResource Include="Queries\Base\GetRecord.sql" />
+      <None Remove="Queries\Categories\Insert.sql" />
+      <EmbeddedResource Include="Queries\Categories\Insert.sql" />
+      <None Remove="Queries\Categories\Update.sql" />
+      <EmbeddedResource Include="Queries\Categories\Update.sql" />
+      <None Remove="Queries\Categories\GetWithEntries.sql" />
+      <EmbeddedResource Include="Queries\Categories\GetWithEntries.sql" />
+      <None Remove="Queries\TaskEntry\CreateTable.sql" />
+      <EmbeddedResource Include="Queries\TaskEntry\CreateTable.sql" />
+      <None Remove="Queries\Categories\CreateTable.sql" />
+      <EmbeddedResource Include="Queries\Categories\CreateTable.sql" />
+    </ItemGroup>
+
+</Project>
