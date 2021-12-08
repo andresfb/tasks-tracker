@@ -1,0 +1,1 @@
+SELECT * FROM [<TableName>] ORDER BY UpdatedAt DESC LIMIT [<RowCount>] OFFSET [<Offset>];
