@@ -20,6 +20,7 @@ Table tasks {
 
 Table task_links {
 	id guid [not null]
+	link text [not null]
 	deleted_at timestamp
 	created_at timestamp
 	updated_at timestamp	
