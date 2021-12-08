@@ -1,11 +1,25 @@
 using TasksTracker.Contracts.Enums;
+using TasksTracker.Contracts.Extensions;
 
 namespace TasksTracker.Contracts.Models;
 
-public class TaskEntry
+public class TaskEntry : EntityBase
 {
     public Guid CategoryId { get; set; }
-    public string Title { get; set; } = string.Empty;
+
+    private string _title = string.Empty;
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            _title = value;
+            Slug = value.Slugify();
+        }
+    }
+
+    public string Slug { get; private set; }
+
     public Status Status { get; set; }
     public string Notes { get; set; } = string.Empty;
     public IEnumerable<TaskEntryLink> Links { get; set; } = new List<TaskEntryLink>();

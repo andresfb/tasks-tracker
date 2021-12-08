@@ -71,7 +71,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
         return await cnn.QueryAsync<T>(sql);
     }
 
-    public T Get(Guid id)
+    public virtual T Get(Guid id)
     {
         var scripts = GetScriptCollection(BaseScriptsFolder);
         var sql = scripts.GetScriptSql(GetRecordFile, new { TableName = _tableName });
@@ -79,7 +79,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
         return cnn.QueryFirst<T>(sql, new { Id = id });
     }
 
-    public async Task<T> GetAsync(Guid id)
+    public virtual async Task<T> GetAsync(Guid id)
     {
         var scripts = GetScriptCollection(BaseScriptsFolder);
         var sql = scripts.GetScriptSql(GetRecordFile, new { TableName = _tableName });
@@ -87,7 +87,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
         return await cnn.QueryFirstAsync<T>(sql, new { Id = id });
     }
 
-    public void Save(T entity)
+    public virtual T Save(T entity)
     {
         entity.UpdatedAt = DateTime.Now;
         
@@ -96,13 +96,14 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
             entity.Id = Guid.NewGuid();
             entity.CreatedAt = DateTime.Now;
             Insert(entity);
-            return;
+            return entity;
         }
         
         Update(entity);
+        return entity;
     }
 
-    public async Task SaveAsync(T entity)
+    public async Task<T> SaveAsync(T entity)
     {
         entity.UpdatedAt = DateTime.Now;
         
@@ -111,10 +112,12 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
             entity.Id = Guid.NewGuid();
             entity.CreatedAt = DateTime.Now;
             await InsertAsync(entity);
-            return;
+            return entity;
         }
         
         await UpdateAsync(entity);
+        
+        return entity;
     }
 
     public void Delete(Guid id)
