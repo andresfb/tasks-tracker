@@ -6,6 +6,6 @@ public interface ITaskEntryRepository : IRepository<TaskEntry>
 {
     IEnumerable<TaskEntry> GetByCategoryList(Guid categoryId);
     Task<IEnumerable<TaskEntry>> GetByCategoryListAsync(Guid categoryId);
-    IEnumerable<TaskEntry> GetTodayList(Guid categoryId);
-    Task<IEnumerable<TaskEntry>> GetTodayListAsync(Guid categoryId);
+    IEnumerable<TaskEntry> GetByCategoryFromDateList(Guid categoryId, DateTime? fromDate);
+    Task<IEnumerable<TaskEntry>> GetByCategoryFromDateListAsync(Guid categoryId, DateTime? fromDate);
 }

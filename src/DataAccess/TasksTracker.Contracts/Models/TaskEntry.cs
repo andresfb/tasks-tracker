@@ -18,7 +18,7 @@ public class TaskEntry : EntityBase
         }
     }
 
-    public string Slug { get; private set; }
+    public string Slug { get; private set; } = string.Empty;
 
     public Status Status { get; set; }
     public string Notes { get; set; } = string.Empty;

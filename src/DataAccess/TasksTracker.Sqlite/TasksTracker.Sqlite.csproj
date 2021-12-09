@@ -18,6 +18,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
       <PackageReference Include="Slugify.Core" Version="3.0.0" />
     </ItemGroup>
 
@@ -35,11 +36,32 @@
       <None Remove="Queries\Categories\Update.sql" />
       <EmbeddedResource Include="Queries\Categories\Update.sql" />
       <None Remove="Queries\Categories\GetWithEntries.sql" />
-      <EmbeddedResource Include="Queries\Categories\GetWithEntries.sql" />
       <None Remove="Queries\TaskEntry\CreateTable.sql" />
-      <EmbeddedResource Include="Queries\TaskEntry\CreateTable.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\CreateTable.sql" />
       <None Remove="Queries\Categories\CreateTable.sql" />
       <EmbeddedResource Include="Queries\Categories\CreateTable.sql" />
+      <None Remove="Queries\TaskEntry\GetByCategoryList.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetByCategoryList.sql" />
+      <None Remove="Queries\TaskEntry\GetWithChildren.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetWithChildren.sql" />
+      <None Remove="Queries\Tags\CreateTable.sql" />
+      <EmbeddedResource Include="Queries\Tags\CreateTable.sql" />
+      <None Remove="Queries\TaskEntryLinks\CreateTable.sql" />
+      <EmbeddedResource Include="Queries\TaskEntryLinks\CreateTable.sql" />
+      <None Remove="Queries\TaskEntryLinks\Insert.sql" />
+      <EmbeddedResource Include="Queries\TaskEntryLinks\Insert.sql" />
+      <None Remove="Queries\TaskEntryLinks\Update.sql" />
+      <EmbeddedResource Include="Queries\TaskEntryLinks\Update.sql" />
+      <None Remove="Queries\Tags\InsertTasksTags.sql" />
+      <EmbeddedResource Include="Queries\Tags\InsertTasksTags.sql" />
+      <None Remove="Queries\Tags\Update.sql" />
+      <EmbeddedResource Include="Queries\Tags\Update.sql" />
+      <None Remove="Queries\Tags\Insert.sql" />
+      <EmbeddedResource Include="Queries\Tags\Insert.sql" />
+      <None Remove="Queries\TaskEntries\GetByCategoryFromDateList.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetByCategoryFromDateList.sql" />
+      <None Remove="Queries\TaskEntries\Insert.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\Insert.sql" />
     </ItemGroup>
 
 </Project>

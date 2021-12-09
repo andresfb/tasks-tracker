@@ -1,0 +1,1 @@
+UPDATE Tags SET Title = @Title, UpdatedAt = @UpdatedAt WHERE Id = @Id;

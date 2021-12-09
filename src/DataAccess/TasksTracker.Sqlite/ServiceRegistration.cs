@@ -10,6 +10,9 @@ public static class ServiceRegistration
     {
         services.AddScoped<IDatabaseContext, DatabaseContext>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITaskEntryRepository, TaskEntryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<ITaskEntryLinkRepository, TaskEntryLinkRepository>();
         
         return services;
     }

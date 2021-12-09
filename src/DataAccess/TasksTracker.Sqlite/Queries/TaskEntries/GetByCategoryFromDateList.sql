@@ -1,0 +1,1 @@
+SELECT * FROM TaskEntry WHERE CategoryId = @CategoryId AND CreatedAt >= @CreatedAt ORDER BY UpdatedAt DESC;

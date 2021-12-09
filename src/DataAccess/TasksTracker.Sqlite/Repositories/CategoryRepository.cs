@@ -7,57 +7,24 @@ namespace TasksTracker.Sqlite.Repositories;
 
 public class CategoryRepository : Repository<Category>, ICategoryRepository
 {
-    private const string GetWithEntriesFile = "GetWithEntries.txt";
+    private const string GetListWithEntriesFile = "GetWithEntries.txt";
     
     public CategoryRepository(IDatabaseContext context) : base(context)
     { }
 
-    public IEnumerable<Category> GetWithEntries()
+    public IEnumerable<Category> GetListWithEntries()
     {
         var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(GetWithEntriesFile);
+        var sql = scripts.GetScriptSql(GetListWithEntriesFile);
         using var cnn = Context.GetConnection();
         return cnn.Query<Category>(sql);
     }
 
-    public async Task<IEnumerable<Category>> GetWithEntriesAsync()
+    public async Task<IEnumerable<Category>> GetListWithEntriesAsync()
     {
         var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(GetWithEntriesFile);
+        var sql = scripts.GetScriptSql(GetListWithEntriesFile);
         await using var cnn = Context.GetConnection();
         return await cnn.QueryAsync<Category>(sql);
-    }
-
-    
-    protected override void Insert(Category entity)
-    {
-        var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(InsertFile);
-        using var cnn = Context.GetConnection();
-        cnn.Execute(sql, entity);
-    }
-
-    protected override async Task InsertAsync(Category entity)
-    {
-        var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(InsertFile);
-        await using var cnn = Context.GetConnection();
-        await cnn.ExecuteAsync(sql, entity);
-    }
-
-    protected override void Update(Category entity)
-    {
-        var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(UpdateFile);
-        using var cnn = Context.GetConnection();
-        cnn.Execute(sql, entity);
-    }
-
-    protected override async Task UpdateAsync(Category entity)
-    {
-        var scripts = GetScriptCollection(nameof(Category).Pluralize());
-        var sql = scripts.GetScriptSql(UpdateFile);
-        await using var cnn = Context.GetConnection();
-        await cnn.ExecuteAsync(sql, entity);
     }
 }

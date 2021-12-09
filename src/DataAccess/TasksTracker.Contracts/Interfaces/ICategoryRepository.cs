@@ -4,6 +4,6 @@ namespace TasksTracker.Contracts.Interfaces;
 
 public interface ICategoryRepository : IRepository<Category>
 {
-    IEnumerable<Category> GetWithEntries();
-    Task<IEnumerable<Category>> GetWithEntriesAsync();
+    IEnumerable<Category> GetListWithEntries();
+    Task<IEnumerable<Category>> GetListWithEntriesAsync();
 }

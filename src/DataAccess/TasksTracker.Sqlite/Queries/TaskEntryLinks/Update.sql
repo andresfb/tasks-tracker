@@ -1,0 +1,1 @@
+UPDATE TaskEntryLinks SET Link = @Link, UpdatedAt = @UpdatedAt WHERE Id = @Id;
