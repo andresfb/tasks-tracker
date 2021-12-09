@@ -77,7 +77,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
         var scripts = GetScriptCollection(BaseScriptsFolder);
         var sql = scripts.GetScriptSql(GetRecordFile, new { TableName = _tableName });
         using var cnn = Context.GetConnection();
-        return cnn.QueryFirst<T>(sql, new { Id = id });
+        return cnn.QueryFirstOrDefault<T>(sql, new { Id = id });
     }
 
     public virtual async Task<T?> GetAsync(Guid id)
@@ -85,7 +85,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
         var scripts = GetScriptCollection(BaseScriptsFolder);
         var sql = scripts.GetScriptSql(GetRecordFile, new { TableName = _tableName });
         await using var cnn = Context.GetConnection();
-        return await cnn.QueryFirstAsync<T>(sql, new { Id = id });
+        return await cnn.QueryFirstOrDefaultAsync<T>(sql, new { Id = id });
     }
 
     public virtual T Save(T entity)

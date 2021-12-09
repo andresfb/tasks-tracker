@@ -1,3 +1,4 @@
+using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using TasksTracker.Contracts.Interfaces;
 using TasksTracker.Sqlite.Repositories;
@@ -13,6 +14,8 @@ public static class ServiceRegistration
         services.AddScoped<ITaskEntryRepository, TaskEntryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ITaskEntryLinkRepository, TaskEntryLinkRepository>();
+        
+        SqlMapper.AddTypeHandler<Guid>(new GuidHandler());
         
         return services;
     }

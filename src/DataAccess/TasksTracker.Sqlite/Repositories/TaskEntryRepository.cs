@@ -68,7 +68,7 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         using var cnn = Context.GetConnection();
 
         using var results = cnn.QueryMultiple(sql, new { Id = id });
-        var taskEntry = results.ReadSingle<TaskEntry>();
+        var taskEntry = results.ReadSingleOrDefault();
         if (taskEntry == null) return null;
 
         taskEntry.Tags = results.Read<Tag>().ToList();
