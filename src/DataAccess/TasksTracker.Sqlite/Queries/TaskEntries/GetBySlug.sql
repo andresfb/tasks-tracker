@@ -1,0 +1,1 @@
+SELECT * FROM TaskEntry WHERE CategoryId = @CategoryId AND Slug = @Slug COLLATE NOCASE ORDER BY UpdatedAt DESC; 

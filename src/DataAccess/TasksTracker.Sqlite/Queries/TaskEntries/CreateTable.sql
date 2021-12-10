@@ -11,4 +11,4 @@ create table TaskEntry
     UpdatedAt  integer not null
 );
 
-create index TaskEntry__slug on TaskEntry (Slug);
+create index TaskEntry__category_slug on TaskEntry (CategoryId, Slug);

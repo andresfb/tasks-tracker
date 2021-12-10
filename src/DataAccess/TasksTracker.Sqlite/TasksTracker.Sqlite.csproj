@@ -62,6 +62,12 @@
       <EmbeddedResource Include="Queries\TaskEntries\GetByCategoryFromDateList.sql" />
       <None Remove="Queries\TaskEntries\Insert.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\Insert.sql" />
+      <None Remove="Queries\Categories\GetByName.sql" />
+      <EmbeddedResource Include="Queries\Categories\GetByName.sql" />
+      <None Remove="Queries\TaskEntries\GetBySlug.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetBySlug.sql" />
+      <None Remove="Queries\TaskEntries\Update.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\Update.sql" />
     </ItemGroup>
 
 </Project>

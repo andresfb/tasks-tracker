@@ -7,4 +7,4 @@ create table Categories
     UpdatedAt integer not null
 );
 
-create unique index categories_Id_uindex on Categories (Id);
+create unique index Categories_Name_uindex on Categories (Name COLLATE NOCASE);

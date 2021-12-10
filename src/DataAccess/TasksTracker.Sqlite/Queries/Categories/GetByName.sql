@@ -1,0 +1,1 @@
+SELECT * FROM Categories WHERE Name = @Name COLLATE NOCASE ORDER BY UpdatedAt DESC;

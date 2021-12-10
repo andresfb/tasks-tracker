@@ -11,6 +11,7 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
     private const string GetByCategoryListFile = "GetByCategoryList.sql";
     private const string GetByCategoryFromDateListFile = "GetByCategoryFromDateList.sql";
     private const string GetWithChildrenFile = "GetWithChildren.sql";
+    private const string GetBySlugFile = "GetBySlug.sql";
 
     private readonly ITagRepository _tagRepository;
     private readonly ITaskEntryLinkRepository _linkRepository;
@@ -61,6 +62,22 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         return await cnn.QueryAsync<TaskEntry>(sql, new { CategoryId = categoryId, CreatedAt = fromDate });
     }
 
+    public TaskEntry? GetBySlug(Guid categoryId, string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetBySlugFile);
+        using var cnn = Context.GetConnection();
+        return cnn.QueryFirstOrDefault<TaskEntry>(sql, new { CategoryId = categoryId, Slug = slug });
+    }
+
+    public async Task<TaskEntry?> GetBySlugAsync(Guid categoryId, string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetBySlugFile);
+        await using var cnn = Context.GetConnection();
+        return await cnn.QueryFirstOrDefaultAsync<TaskEntry>(sql, new { CategoryId = categoryId, Slug = slug });
+    }
+
     public override TaskEntry? Get(Guid id)
     {
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
@@ -68,11 +85,11 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         using var cnn = Context.GetConnection();
 
         using var results = cnn.QueryMultiple(sql, new { Id = id });
-        var taskEntry = results.ReadSingleOrDefault();
+        var taskEntry = results.ReadSingleOrDefault<TaskEntry>();
         if (taskEntry == null) return null;
 
-        taskEntry.Tags = results.Read<Tag>().ToList();
-        taskEntry.Links = results.Read<TaskEntryLink>().ToList();
+        taskEntry.Tags = results.Read<Tag>()?.ToList() ?? new List<Tag>();
+        taskEntry.Links = results.Read<TaskEntryLink>()?.ToList() ?? new List<TaskEntryLink>();
 
         return taskEntry;
     }
@@ -87,8 +104,8 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         var taskEntry = await results.ReadSingleAsync<TaskEntry>();
         if (taskEntry == null) return null;
 
-        taskEntry.Tags = (await results.ReadAsync<Tag>()).ToList();
-        taskEntry.Links = (await results.ReadAsync<TaskEntryLink>()).ToList();
+        taskEntry.Tags = (await results.ReadAsync<Tag>())?.ToList() ?? new List<Tag>();
+        taskEntry.Links = (await results.ReadAsync<TaskEntryLink>())?.ToList() ?? new List<TaskEntryLink>();
 
         return taskEntry;
     }
@@ -96,10 +113,32 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
 
     protected override void Insert(TaskEntry entity)
     {
+        ExecuteQuery(UpdateFile, entity);
+    }
+
+    protected override async Task InsertAsync(TaskEntry entity)
+    {
+        await ExecuteQueryAsync(UpdateFile, entity);
+    }
+
+    protected override void Update(TaskEntry entity)
+    {
+        ExecuteQuery(UpdateFile, entity);
+    }
+
+    protected override async Task UpdateAsync(TaskEntry entity)
+    {
+        await ExecuteQueryAsync(UpdateFile, entity);
+    }
+
+    
+    private void ExecuteQuery(string queryFile, TaskEntry entity)
+    {
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(InsertFile);
+        var sql = scripts.GetScriptSql(queryFile);
         
         using var cnn = Context.GetConnection();
+        cnn.Open();
         using var trans = cnn.BeginTransaction();
         
         try
@@ -111,18 +150,19 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error Inserting TaskEntry");
+            _logger.LogError(e, "Error Saving TaskEntry");
             trans.Rollback();
             throw;
         }
     }
 
-    protected override async Task InsertAsync(TaskEntry entity)
+    private async Task ExecuteQueryAsync(string queryFile, TaskEntry entity)
     {
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(InsertFile);
+        var sql = scripts.GetScriptSql(queryFile);
         
         await using var cnn = Context.GetConnection();
+        await cnn.OpenAsync();
         var trans = await cnn.BeginTransactionAsync();
         
         try
@@ -134,7 +174,7 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error Inserting TaskEntry");
+            _logger.LogError(e, "Error Saving TaskEntry");
             await trans.RollbackAsync();
             throw;
         }

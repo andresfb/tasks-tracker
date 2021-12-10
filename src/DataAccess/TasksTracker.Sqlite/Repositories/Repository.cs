@@ -5,6 +5,7 @@ using Humanizer;
 using TasksTracker.Contracts.Interfaces;
 using TasksTracker.Contracts.Models;
 using TasksTracker.Sqlite.Dtos;
+using TasksTracker.Sqlite.Helpers;
 
 namespace TasksTracker.Sqlite.Repositories;
 
@@ -25,7 +26,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
     protected Repository(IDatabaseContext context)
     {
         Context = context;
-        _tableName = nameof(T).Pluralize();
+        _tableName = typeof(T).Name.Pluralize();
     }
 
     public IEnumerable<T> GetList()
@@ -139,7 +140,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
 
     protected virtual void Insert(T entity)
     {
-        var scripts = GetScriptCollection(nameof(T).Pluralize());
+        var scripts = GetScriptCollection(typeof(T).Name.Pluralize());
         var sql = scripts.GetScriptSql(InsertFile);
         using var cnn = Context.GetConnection();
         cnn.Execute(sql, entity);
@@ -147,7 +148,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
 
     protected virtual async Task InsertAsync(T entity)
     {
-        var scripts = GetScriptCollection(nameof(T).Pluralize());
+        var scripts = GetScriptCollection(typeof(T).Name.Pluralize());
         var sql = scripts.GetScriptSql(InsertFile);
         await using var cnn = Context.GetConnection();
         await cnn.ExecuteAsync(sql, entity);
@@ -155,7 +156,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
 
     protected virtual void Update(T entity)
     {
-        var scripts = GetScriptCollection(nameof(T).Pluralize());
+        var scripts = GetScriptCollection(typeof(T).Name.Pluralize());
         var sql = scripts.GetScriptSql(UpdateFile);
         using var cnn = Context.GetConnection();
         cnn.Execute(sql, entity);
@@ -163,7 +164,7 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
 
     protected virtual async Task UpdateAsync(T entity)
     {
-        var scripts = GetScriptCollection(nameof(T).Pluralize());
+        var scripts = GetScriptCollection(typeof(T).Name.Pluralize());
         var sql = scripts.GetScriptSql(UpdateFile);
         await using var cnn = Context.GetConnection();
         await cnn.ExecuteAsync(sql, entity);
@@ -172,12 +173,8 @@ public abstract class Repository<T> : IRepository<T> where T : EntityBase
     protected virtual SqlScriptCollection GetScriptCollection(string baseFolder = "")
     {
         if (string.IsNullOrEmpty(baseFolder)) baseFolder = _tableName;
-        
-        var scripts = new SqlScriptCollection();
-        var assembly = Assembly.GetExecutingAssembly();
-        scripts.Add.FromAssembly(assembly, $"TasksTracker.Sqlite.Queries.{baseFolder}");
-        
-        return scripts;
+
+        return ScriptCollection.GetScriptCollection(baseFolder);
     }
     
     protected static ToSaveLists<T> SortLists(List<T> tags)
