@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
@@ -12,29 +13,45 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
 {
     public class Settings : CommandSettings
     {
-        [CommandOption("-c|--category <CATEGORY>")]
+        [CommandArgument(0, "[Category]")]
+        [CommandOption("-c|--category <Category>")]
         [Description("Task Category")]
-        public string Category { get; set; } = string.Empty;
+        public string Category { get; init; } = string.Empty;
 
-        [CommandOption("-t|--title <TITLE>")]
+        [CommandArgument(1, "[Title]")]
+        [CommandOption("-t|--title <Title>")]
         [Description("Task Title")]
-        public string Title { get; set; } = string.Empty;
+        public string Title { get; init; } = string.Empty;
 
-        [CommandOption("-n|--note <TITLE>")]
+        [CommandArgument(2, "[Note]")]
+        [CommandOption("-n|--note <Note>")]
         [Description("Extra Notes")]
-        public string Notes { get; set; } = string.Empty;
+        public string Note { get; init; } = string.Empty;
+
+        [CommandArgument(3, "[Tags]")]
+        [CommandOption("-g|--tags <Tags>")]
+        [Description("Tags")]
+        public string[] Tags { get; init; } = Array.Empty<string>();
     }
 
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITaskEntryRepository _taskEntryRepository;
+    private readonly ITagRepository _tagRepository;
     
     private bool _promptForInput;
     private Category? _selectedCategory;
 
-    public AddTaskEntryCommand(ICategoryRepository categoryRepository, ITaskEntryRepository taskEntryRepository)
+    public AddTaskEntryCommand(
+        ICategoryRepository categoryRepository, 
+        ITaskEntryRepository taskEntryRepository, 
+        ITagRepository tagRepository)
     {
-        _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-        _taskEntryRepository = taskEntryRepository ?? throw new ArgumentNullException(nameof(taskEntryRepository));
+        _categoryRepository = categoryRepository 
+                              ?? throw new ArgumentNullException(nameof(categoryRepository));
+        _taskEntryRepository = taskEntryRepository 
+                               ?? throw new ArgumentNullException(nameof(taskEntryRepository));
+        _tagRepository = tagRepository
+                         ?? throw new ArgumentNullException(nameof(tagRepository));
     }
     
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings)
@@ -43,7 +60,8 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         
         var category = PromptCategoryIfMissing(settings.Category);
         var title = PromptTitleIfMissing(settings.Title);
-        var notes = PromptNotesIfMissing(settings.Notes);
+        var notes = PromptNotesIfMissing(settings.Note);
+        var tags = PromptTagsIfMissing(settings.Tags);
         
         var taskEntry = new TaskEntry()
         {
@@ -53,8 +71,10 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
             Notes = notes.Trim(),
         };
 
-        var dataEntry = _taskEntryRepository.GetBySlug(category, taskEntry.Slug);
-        taskEntry.Id = dataEntry?.Id ?? Guid.Empty;
+        var dataTask = _taskEntryRepository.GetBySlug(category, taskEntry.Slug);
+        taskEntry.Id = dataTask?.Id ?? Guid.Empty;
+        taskEntry.Tags = SyncTags(tags, dataTask);
+        
         taskEntry = _taskEntryRepository.Save(taskEntry);
         var savedEntry = _taskEntryRepository.Get(taskEntry.Id);
         
@@ -101,14 +121,10 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         
         var categories = _categoryRepository.GetList().OrderBy(c => c.UpdatedAt).ToList();
         if (!categories.Any())
-        {
             throw new ApplicationException("No Categories on record, create at least one");
-        }
 
         if (!_promptForInput)
-        {
             return DefaultCategory(categories);
-        }
         
         var rule = new Rule("[green]Enter the Task information[/]")
         {
@@ -156,7 +172,8 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
        var select = AnsiConsole.Prompt(prompt);
        _selectedCategory = categories.FirstOrDefault(c => c.Name == select);
 
-       return _selectedCategory?.Id ?? throw new ApplicationException("Invalid Category");
+       return _selectedCategory?.Id 
+              ?? throw new ApplicationException("Invalid Category");
     }
     
     private static Guid PromptCategorySelects(IReadOnlyCollection<Category> categories)
@@ -173,10 +190,8 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
 
     private string PromptTitleIfMissing(string? current)
     {
-        if (!string.IsNullOrEmpty(current))
-        {
+        if (!string.IsNullOrEmpty(current)) 
             return current;
-        }
 
         _promptForInput = true;
         return AnsiConsole.Prompt(
@@ -191,13 +206,89 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
     
     private string PromptNotesIfMissing(string? current)
     {
-        if (!string.IsNullOrEmpty(current))
-        {
+        if (!string.IsNullOrEmpty(current)) 
             return current;
-        }
 
         return _promptForInput
-            ? AnsiConsole.Prompt(new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Notes:[/]").AllowEmpty())
+            ? AnsiConsole.Prompt(
+                new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Notes:[/]")
+                    .AllowEmpty())
             : string.Empty;
+    }
+    
+    private IEnumerable<string> PromptTagsIfMissing(string[] tags)
+    {
+        if (tags != Array.Empty<string>()) 
+            return tags;
+
+        if (!_promptForInput) 
+            return tags;
+
+        var response = AnsiConsole.Prompt(
+            new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Tags:[/]")
+                .DefaultValue("Show List")
+                .AllowEmpty()
+        );
+
+        if (string.IsNullOrEmpty(response)) 
+            return Array.Empty<string>();
+
+        if (response.Trim().ToLower() != "show list") 
+            return response.Split(" ");
+        
+        var tagList = _tagRepository.GetList().ToList();
+        if (!tagList.Any())
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.Markup("[red]No tags found[/]\n");
+            return PromptForTags();
+        }
+        
+        var results = AnsiConsole.Prompt(
+            new MultiSelectionPrompt<string>()
+                .Title("Chose [green]Tags[/] from the list")
+                .NotRequired()
+                .PageSize(10)
+                .MoreChoicesText("[grey](Move up and down to show more tags)[/]")
+                .InstructionsText(
+                    "[grey](Press [blue]<space>[/] to toggle a fruit, " + 
+                    "[green]<enter>[/] to accept)[/]")
+                .AddChoices(
+                    tagList.Select(t => t.Title).ToArray()    
+                ));
+
+        return results.ToArray();
+    }
+
+    private IEnumerable<Tag> SyncTags(IEnumerable<string> tags, TaskEntry? dataTask)
+    {
+        if (dataTask == null) 
+            return GenTags(tags);
+
+        if (!dataTask.Tags.Any()) 
+            return GenTags(tags);
+
+        var result = tags.Where(tag => dataTask.Tags.FirstOrDefault(t => t.Title == tag) != null)
+            .ToList();
+
+        return GenTags(result);
+    }
+
+    private IEnumerable<Tag> GenTags(IEnumerable<string> tags)
+    {
+        // TODO: search for existing tags
+        return tags.Select(tag => new Tag { Title = tag }).ToList();
+    }
+    
+    private static IEnumerable<string> PromptForTags()
+    {
+        var response = AnsiConsole.Prompt(
+            new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Tags:[/]")
+                .AllowEmpty()
+        );
+
+        return string.IsNullOrEmpty(response) 
+            ? Array.Empty<string>() 
+            : response.Split(" ");
     }
 }

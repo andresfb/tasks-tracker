@@ -1,3 +1,4 @@
+using System.Globalization;
 using TasksTracker.Contracts.Enums;
 using TasksTracker.Contracts.Extensions;
 
@@ -13,7 +14,8 @@ public class TaskEntry : EntityBase
         get => _title;
         set
         {
-            _title = value;
+            var textInfo = new CultureInfo("en-US", false).TextInfo;
+            _title = textInfo.ToTitleCase(value.ToLower().Trim());
             Slug = value.Slugify();
         }
     }

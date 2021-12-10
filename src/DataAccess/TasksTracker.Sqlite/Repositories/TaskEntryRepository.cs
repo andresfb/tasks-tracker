@@ -44,7 +44,9 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         return await cnn.QueryAsync<TaskEntry>(sql, new { CategoryId = categoryId });
     }
 
-    public IEnumerable<TaskEntry> GetByCategoryFromDateList(Guid categoryId, DateTime? fromDate)
+    public IEnumerable<TaskEntry> GetByCategoryFromDateList(
+        Guid categoryId, 
+        DateTime? fromDate)
     {
         fromDate ??= DateTime.Today;
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
@@ -53,17 +55,23 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         return cnn.Query<TaskEntry>(sql, new { CategoryId = categoryId, CreatedAt = fromDate });
     }
 
-    public async Task<IEnumerable<TaskEntry>> GetByCategoryFromDateListAsync(Guid categoryId, DateTime? fromDate)
+    public async Task<IEnumerable<TaskEntry>> GetByCategoryFromDateListAsync(
+        Guid categoryId, 
+        DateTime? fromDate)
     {
         fromDate ??= DateTime.Today;
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
         var sql = scripts.GetScriptSql(GetByCategoryFromDateListFile);
         await using var cnn = Context.GetConnection();
-        return await cnn.QueryAsync<TaskEntry>(sql, new { CategoryId = categoryId, CreatedAt = fromDate });
+        return await cnn.QueryAsync<TaskEntry>(
+            sql, 
+            new { CategoryId = categoryId, CreatedAt = fromDate }
+        );
     }
 
     public TaskEntry? GetBySlug(Guid categoryId, string slug)
     {
+        // TODO: add the children tables
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
         var sql = scripts.GetScriptSql(GetBySlugFile);
         using var cnn = Context.GetConnection();
@@ -113,12 +121,12 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
 
     protected override void Insert(TaskEntry entity)
     {
-        ExecuteQuery(UpdateFile, entity);
+        ExecuteQuery(InsertFile, entity);
     }
 
     protected override async Task InsertAsync(TaskEntry entity)
     {
-        await ExecuteQueryAsync(UpdateFile, entity);
+        await ExecuteQueryAsync(InsertFile, entity);
     }
 
     protected override void Update(TaskEntry entity)
