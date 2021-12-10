@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>tasker</AssemblyName>
+        <Company>Andres Bastidas</Company>
+        <Product>Personal Programs</Product>
+        <AssemblyVersion>0.01</AssemblyVersion>
+        <NeutralLanguage>en</NeutralLanguage>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TasksTracker.Cli\TasksTracker.Cli.csproj" />
+    </ItemGroup>
+
+</Project>
