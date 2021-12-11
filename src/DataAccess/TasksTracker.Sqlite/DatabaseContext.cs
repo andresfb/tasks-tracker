@@ -27,6 +27,7 @@ public class DatabaseContext : IDatabaseContext
     
     private void BoostrapDatabase()
     {
+        // TODO: change the 'check' table to tags.
         const string checkTable = "Categories";
         using var cnn = GetConnection();
         {
@@ -82,6 +83,7 @@ public class DatabaseContext : IDatabaseContext
     
     private static void SeedCategories(IDbConnection cnn)
     {
+        // TODO: seed two tags (Work, Personal)
         const string insertFile = "Insert.sql";
         var scripts = ScriptCollection.GetScriptCollection(nameof(Category).Pluralize());
         var insertSql = scripts.GetScriptSql(insertFile);

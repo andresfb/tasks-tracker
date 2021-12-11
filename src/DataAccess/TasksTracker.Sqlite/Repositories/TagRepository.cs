@@ -83,7 +83,7 @@ public class TagRepository : Repository<Tag>, ITagRepository
         var scripts = GetScriptCollection(nameof(Tag).Pluralize());
         var sql = scripts.GetScriptSql(InsertTasksTagsFile);
 
-        foreach (var tag in tags.Where(tag => tag.GlueId != Guid.Empty))
+        foreach (var tag in tags.Where(tag => tag.GlueId == Guid.Empty))
         {
             cnn.Execute(sql, new
             {
@@ -99,7 +99,7 @@ public class TagRepository : Repository<Tag>, ITagRepository
         var scripts = GetScriptCollection(nameof(Tag).Pluralize());
         var sql = scripts.GetScriptSql(InsertTasksTagsFile);
         
-        foreach (var tag in tags.Where(tag => tag.GlueId != Guid.Empty))
+        foreach (var tag in tags.Where(tag => tag.GlueId == Guid.Empty))
         {
             await cnn.ExecuteAsync(sql, new
             {

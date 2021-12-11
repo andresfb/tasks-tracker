@@ -1,4 +1,3 @@
-using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
@@ -37,6 +36,7 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
     private readonly ICategoryRepository _categoryRepository;
     private readonly ITaskEntryRepository _taskEntryRepository;
     private readonly ITagRepository _tagRepository;
+    private readonly List<Tag> _tagList;
     
     private bool _promptForInput;
     private Category? _selectedCategory;
@@ -52,6 +52,8 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
                                ?? throw new ArgumentNullException(nameof(taskEntryRepository));
         _tagRepository = tagRepository
                          ?? throw new ArgumentNullException(nameof(tagRepository));
+        
+        _tagList = _tagRepository.GetList().ToList();
     }
     
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings)
@@ -236,8 +238,7 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         if (response.Trim().ToLower() != "show list") 
             return response.Split(" ");
         
-        var tagList = _tagRepository.GetList().ToList();
-        if (!tagList.Any())
+        if (!_tagList.Any())
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Markup("[red]No tags found[/]\n");
@@ -251,35 +252,15 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
                 .PageSize(10)
                 .MoreChoicesText("[grey](Move up and down to show more tags)[/]")
                 .InstructionsText(
-                    "[grey](Press [blue]<space>[/] to toggle a fruit, " + 
+                    "[grey](Press [blue]<space>[/] to toggle a tag, " + 
                     "[green]<enter>[/] to accept)[/]")
                 .AddChoices(
-                    tagList.Select(t => t.Title).ToArray()    
+                    _tagList.Select(t => t.Title).ToArray()    
                 ));
 
         return results.ToArray();
     }
 
-    private IEnumerable<Tag> SyncTags(IEnumerable<string> tags, TaskEntry? dataTask)
-    {
-        if (dataTask == null) 
-            return GenTags(tags);
-
-        if (!dataTask.Tags.Any()) 
-            return GenTags(tags);
-
-        var result = tags.Where(tag => dataTask.Tags.FirstOrDefault(t => t.Title == tag) != null)
-            .ToList();
-
-        return GenTags(result);
-    }
-
-    private IEnumerable<Tag> GenTags(IEnumerable<string> tags)
-    {
-        // TODO: search for existing tags
-        return tags.Select(tag => new Tag { Title = tag }).ToList();
-    }
-    
     private static IEnumerable<string> PromptForTags()
     {
         var response = AnsiConsole.Prompt(
@@ -290,5 +271,38 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         return string.IsNullOrEmpty(response) 
             ? Array.Empty<string>() 
             : response.Split(" ");
+    }
+    
+    private IEnumerable<Tag> SyncTags(IEnumerable<string> tags, TaskEntry? dataTask)
+    {
+        if (dataTask == null) 
+            return GenTags(tags);
+
+        if (!dataTask.Tags.Any()) 
+            return GenTags(tags);
+
+        var result = tags.Where(tag => dataTask.Tags.FirstOrDefault(t => t.Title.ToLower() == tag.ToLower()) != null)
+            .ToList();
+
+        return GenTags(result);
+    }
+
+    private IEnumerable<Tag> GenTags(IEnumerable<string> tags)
+    {
+        var results = new List<Tag>();
+        
+        foreach (var tag in tags)
+        {
+            var savedTag = _tagList.FirstOrDefault(t => t.Title.ToLower() == tag.ToLower());
+            if (savedTag == null)
+            {
+                results.Add(new Tag() { Title = tag });
+                continue;
+            }
+            
+            results.Add(savedTag);
+        }
+        
+        return results;
     }
 }
