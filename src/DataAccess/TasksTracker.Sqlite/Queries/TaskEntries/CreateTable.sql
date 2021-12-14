@@ -1,7 +1,6 @@
 create table TaskEntry
 (
     Id         TEXT constraint TaskEntry_pk primary key,
-    CategoryId TEXT    not null constraint fk_Categories references Categories,
     Title      TEXT    not null,
     Slug       TEXT    not null,
     Status     integer default 0 not null,
@@ -11,4 +10,4 @@ create table TaskEntry
     UpdatedAt  integer not null
 );
 
-create index TaskEntry__category_slug on TaskEntry (CategoryId, Slug);
+create index TaskEntry__slug on TaskEntry (Slug);

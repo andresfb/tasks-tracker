@@ -8,10 +8,11 @@ namespace TasksTracker.Sqlite.Repositories;
 
 public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
 {
-    private const string GetByCategoryListFile = "GetByCategoryList.sql";
-    private const string GetByCategoryFromDateListFile = "GetByCategoryFromDateList.sql";
+    private const string GetFromDateListFile = "GetFromDateList.sql";
     private const string GetWithChildrenFile = "GetWithChildren.sql";
     private const string GetBySlugFile = "GetBySlug.sql";
+    private const string GetBySlugTodayFile = "GetBySlugToday.sql";
+    private const string ExistsTodayFile = "ExistsToday.sql";
 
     private readonly ITagRepository _tagRepository;
     private readonly ITaskEntryLinkRepository _linkRepository;
@@ -28,62 +29,91 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         _logger = logger;
     }
 
-    public IEnumerable<TaskEntry> GetByCategoryList(Guid categoryId)
-    {
-        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetByCategoryListFile);
-        using var cnn = Context.GetConnection();
-        return cnn.Query<TaskEntry>(sql, new { CategoryId = categoryId });
-    }
-
-    public async Task<IEnumerable<TaskEntry>> GetByCategoryListAsync(Guid categoryId)
-    {
-        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetByCategoryListFile);
-        await using var cnn = Context.GetConnection();
-        return await cnn.QueryAsync<TaskEntry>(sql, new { CategoryId = categoryId });
-    }
-
-    public IEnumerable<TaskEntry> GetByCategoryFromDateList(
-        Guid categoryId, 
-        DateTime? fromDate)
+    public IEnumerable<TaskEntry> GetFromDateList(DateTime? fromDate)
     {
         fromDate ??= DateTime.Today;
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetByCategoryFromDateListFile);
+        var sql = scripts.GetScriptSql(GetFromDateListFile);
         using var cnn = Context.GetConnection();
-        return cnn.Query<TaskEntry>(sql, new { CategoryId = categoryId, CreatedAt = fromDate });
+        return cnn.Query<TaskEntry>(sql, new { CreatedAt = fromDate });
     }
 
-    public async Task<IEnumerable<TaskEntry>> GetByCategoryFromDateListAsync(
-        Guid categoryId, 
-        DateTime? fromDate)
+    public async Task<IEnumerable<TaskEntry>> GetFromDateListAsync(DateTime? fromDate)
     {
         fromDate ??= DateTime.Today;
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetByCategoryFromDateListFile);
+        var sql = scripts.GetScriptSql(GetFromDateListFile);
         await using var cnn = Context.GetConnection();
-        return await cnn.QueryAsync<TaskEntry>(
-            sql, 
-            new { CategoryId = categoryId, CreatedAt = fromDate }
+        return await cnn.QueryAsync<TaskEntry>(sql, new { CreatedAt = fromDate }
         );
     }
 
-    public TaskEntry? GetBySlug(Guid categoryId, string slug)
+    public TaskEntry? GetBySlug(string slug)
     {
-        // TODO: add the children tables
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
         var sql = scripts.GetScriptSql(GetBySlugFile);
         using var cnn = Context.GetConnection();
-        return cnn.QueryFirstOrDefault<TaskEntry>(sql, new { CategoryId = categoryId, Slug = slug });
+        return cnn.QueryFirstOrDefault<TaskEntry>(sql, new { Slug = slug });
     }
 
-    public async Task<TaskEntry?> GetBySlugAsync(Guid categoryId, string slug)
+    public async Task<TaskEntry?> GetBySlugAsync(string slug)
     {
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
         var sql = scripts.GetScriptSql(GetBySlugFile);
         await using var cnn = Context.GetConnection();
-        return await cnn.QueryFirstOrDefaultAsync<TaskEntry>(sql, new { CategoryId = categoryId, Slug = slug });
+        return await cnn.QueryFirstOrDefaultAsync<TaskEntry>(sql, new { Slug = slug });
+    }
+
+    public TaskEntry? GetBySlugToday(string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetBySlugTodayFile);
+        using var cnn = Context.GetConnection();
+        return cnn.QueryFirstOrDefault<TaskEntry>(sql, new
+        {
+            Slug = slug,
+            FromDate = DateTime.Today,
+            ToDate = DateTime.Today.AddDays(1).AddSeconds(-1)
+        });
+    }
+
+    public async Task<TaskEntry?> GetBySlugTodayAsync(string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetBySlugTodayFile);
+        await using var cnn = Context.GetConnection();
+        return await cnn.QueryFirstOrDefaultAsync<TaskEntry>(sql, new
+        {
+            Slug = slug,
+            FromDate = DateTime.Today,
+            ToDate = DateTime.Today.AddDays(1).AddSeconds(-1)
+        });
+    }
+
+    public Guid ExistsToday(string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(ExistsTodayFile);
+        using var cnn = Context.GetConnection();
+        return cnn.QueryFirstOrDefault<Guid>(sql, new
+        {
+            Slug = slug,
+            FromDate = DateTime.Today,
+            ToDate = DateTime.Today.AddDays(1).AddSeconds(-1)
+        });
+    }
+
+    public async Task<Guid> ExistsTodayAsync(string slug)
+    {
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(ExistsTodayFile);
+        await using var cnn = Context.GetConnection();
+        return await cnn.QueryFirstOrDefaultAsync<Guid>(sql, new
+        {
+            Slug = slug,
+            FromDate = DateTime.Today,
+            ToDate = DateTime.Today.AddDays(1).AddSeconds(-1)
+        });
     }
 
     public override TaskEntry? Get(Guid id)

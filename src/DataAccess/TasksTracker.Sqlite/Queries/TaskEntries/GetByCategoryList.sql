@@ -1,1 +1,0 @@
-SELECT * FROM TaskEntry WHERE CategoryId = @CategoryId ORDER BY UpdatedAt DESC;

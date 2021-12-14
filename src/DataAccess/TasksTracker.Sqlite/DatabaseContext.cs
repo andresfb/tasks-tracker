@@ -27,8 +27,7 @@ public class DatabaseContext : IDatabaseContext
     
     private void BoostrapDatabase()
     {
-        // TODO: change the 'check' table to tags.
-        const string checkTable = "Categories";
+        const string checkTable = "Tags";
         using var cnn = GetConnection();
         {
             var table = cnn.Query<string>($"SELECT name FROM sqlite_master WHERE type='table' AND name = '{checkTable}';");
@@ -46,7 +45,6 @@ public class DatabaseContext : IDatabaseContext
     {
         var tables = new List<string>
         {
-            nameof(Category).Pluralize(),
             nameof(TaskEntry).Pluralize(),
             nameof(TaskEntryLink).Pluralize(),
             nameof(Tag).Pluralize()
@@ -59,7 +57,7 @@ public class DatabaseContext : IDatabaseContext
         try
         {
             CreateTables(tables, cnn);
-            SeedCategories(cnn);
+            SeedDatabase(cnn);
             transaction.Commit();
         }
         catch (Exception)
@@ -81,26 +79,25 @@ public class DatabaseContext : IDatabaseContext
         }
     }
     
-    private static void SeedCategories(IDbConnection cnn)
+    private static void SeedDatabase(IDbConnection cnn)
     {
-        // TODO: seed two tags (Work, Personal)
         const string insertFile = "Insert.sql";
-        var scripts = ScriptCollection.GetScriptCollection(nameof(Category).Pluralize());
+        var scripts = ScriptCollection.GetScriptCollection(nameof(Tag).Pluralize());
         var insertSql = scripts.GetScriptSql(insertFile);
 
-        var category = new Category()
+        var category = new Tag()
         {
             Id = Guid.NewGuid(),
-            Name = "Work",
+            Title = "Personal",
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
         };
         cnn.Execute(insertSql, category);
 
-        category = new Category()
+        category = new Tag()
         {
             Id = Guid.NewGuid(),
-            Name = "Personal",
+            Title = "Work",
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
         };

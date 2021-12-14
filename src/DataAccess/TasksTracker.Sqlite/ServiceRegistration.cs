@@ -10,7 +10,6 @@ public static class ServiceRegistration
     public static IServiceCollection AddServiceRegistration(this IServiceCollection services)
     {
         services.AddScoped<IDatabaseContext, DatabaseContext>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITaskEntryRepository, TaskEntryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ITaskEntryLinkRepository, TaskEntryLinkRepository>();

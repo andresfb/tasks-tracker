@@ -41,15 +41,10 @@ public static class AppRunner
                 {
                     "add:task",
                     "--title [-t] \"Respond to Emails\"",
-                    "(Category will default to the first record found)"
                 })
-                .WithExample(new[]
-                    {"add:task", "--category [-c] personal", "--title [-t] \"Pickup Mail\""}
-                )
                 .WithExample(new[]
                 {
                     "add:task",
-                    "--category [-c] work",
                     "--title [-t] \"Migrate Database\"",
                     "--note [-n] \"Consult with DBA for access to server\""
                 })

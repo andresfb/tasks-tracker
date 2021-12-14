@@ -32,16 +32,12 @@
       <None Remove="Queries\Base\GetRecord.sql" />
       <EmbeddedResource Include="Queries\Base\GetRecord.sql" />
       <None Remove="Queries\Categories\Insert.sql" />
-      <EmbeddedResource Include="Queries\Categories\Insert.sql" />
       <None Remove="Queries\Categories\Update.sql" />
-      <EmbeddedResource Include="Queries\Categories\Update.sql" />
       <None Remove="Queries\Categories\GetWithEntries.sql" />
       <None Remove="Queries\TaskEntry\CreateTable.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\CreateTable.sql" />
       <None Remove="Queries\Categories\CreateTable.sql" />
-      <EmbeddedResource Include="Queries\Categories\CreateTable.sql" />
       <None Remove="Queries\TaskEntry\GetByCategoryList.sql" />
-      <EmbeddedResource Include="Queries\TaskEntries\GetByCategoryList.sql" />
       <None Remove="Queries\TaskEntry\GetWithChildren.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\GetWithChildren.sql" />
       <None Remove="Queries\Tags\CreateTable.sql" />
@@ -59,15 +55,17 @@
       <None Remove="Queries\Tags\Insert.sql" />
       <EmbeddedResource Include="Queries\Tags\Insert.sql" />
       <None Remove="Queries\TaskEntries\GetByCategoryFromDateList.sql" />
-      <EmbeddedResource Include="Queries\TaskEntries\GetByCategoryFromDateList.sql" />
       <None Remove="Queries\TaskEntries\Insert.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\Insert.sql" />
       <None Remove="Queries\Categories\GetByName.sql" />
-      <EmbeddedResource Include="Queries\Categories\GetByName.sql" />
       <None Remove="Queries\TaskEntries\GetBySlug.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\GetBySlug.sql" />
       <None Remove="Queries\TaskEntries\Update.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\Update.sql" />
+      <None Remove="Queries\TaskEntries\GetBySlugToday.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetBySlugToday.sql" />
+      <None Remove="Queries\TaskEntries\ExistsToday.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\ExistsToday.sql" />
     </ItemGroup>
 
 </Project>

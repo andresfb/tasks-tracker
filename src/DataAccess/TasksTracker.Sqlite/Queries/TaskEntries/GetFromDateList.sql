@@ -1,0 +1,1 @@
+SELECT * FROM TaskEntry WHERE CreatedAt >= @CreatedAt ORDER BY UpdatedAt DESC;
