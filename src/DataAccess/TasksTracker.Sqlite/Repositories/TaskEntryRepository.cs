@@ -8,7 +8,8 @@ namespace TasksTracker.Sqlite.Repositories;
 
 public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
 {
-    private const string GetFromDateListFile = "GetFromDateList.sql";
+    private const string GetDateRangeListFile = "GetDateRangeList.sql";
+    private const string GetDateRangeTagsListFile = "GetDateRangeTagsList.sql";
     private const string GetWithChildrenFile = "GetWithChildren.sql";
     private const string GetBySlugFile = "GetBySlug.sql";
     private const string GetBySlugTodayFile = "GetBySlugToday.sql";
@@ -29,23 +30,72 @@ public class TaskEntryRepository : Repository<TaskEntry>, ITaskEntryRepository
         _logger = logger;
     }
 
-    public IEnumerable<TaskEntry> GetFromDateList(DateTime? fromDate)
+    public IEnumerable<TaskEntry> GetDateRangeList(DateTime? fromDate, DateTime? toDate)
     {
         fromDate ??= DateTime.Today;
+        toDate ??= DateTime.Today.AddYears(10);
+        
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetFromDateListFile);
+        var sql = scripts.GetScriptSql(GetDateRangeListFile);
+        
         using var cnn = Context.GetConnection();
-        return cnn.Query<TaskEntry>(sql, new { CreatedAt = fromDate });
+        return cnn.Query<TaskEntry>(sql, new
+        {
+            FromDate = fromDate?.Date, 
+            ToDate = toDate?.AddDays(1).AddSeconds(-1)
+        });
     }
 
-    public async Task<IEnumerable<TaskEntry>> GetFromDateListAsync(DateTime? fromDate)
+    public async Task<IEnumerable<TaskEntry>> GetDateRangeListAsync(DateTime? fromDate, DateTime? toDate)
     {
         fromDate ??= DateTime.Today;
+        toDate ??= DateTime.Today.AddYears(10);
+        
         var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
-        var sql = scripts.GetScriptSql(GetFromDateListFile);
+        var sql = scripts.GetScriptSql(GetDateRangeListFile);
+        
         await using var cnn = Context.GetConnection();
-        return await cnn.QueryAsync<TaskEntry>(sql, new { CreatedAt = fromDate }
-        );
+        return await cnn.QueryAsync<TaskEntry>(sql, new
+        {
+            FromDate = fromDate?.Date, 
+            ToDate = toDate?.Date.AddDays(1).AddSeconds(-1)
+        });
+    }
+
+    public IEnumerable<TaskEntry> GetDateRangeTagsList(DateTime fromDate, DateTime? toDate, IEnumerable<string> tags)
+    {
+        var tagsList = tags.ToList();
+        if (!tagsList.Any())
+            return GetDateRangeList(fromDate, toDate);
+        
+        toDate ??= DateTime.Today.AddYears(10);
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetDateRangeTagsListFile);
+        using var cnn = Context.GetConnection();
+        return cnn.Query<TaskEntry>(sql, new
+        {
+            FromDate = fromDate.Date, 
+            ToDate = toDate?.Date.AddDays(1).AddSeconds(-1), 
+            Tags = tagsList
+        });
+    }
+
+    public async Task<IEnumerable<TaskEntry>> GetDateRangeTagsListAsync(DateTime fromDate, DateTime? toDate, IEnumerable<string> tags)
+    {
+        var tagsList = tags.ToList();
+        if (!tagsList.Any())
+            return await GetDateRangeListAsync(fromDate, toDate);
+        
+        toDate ??= DateTime.Today.AddYears(10);
+        var scripts = GetScriptCollection(nameof(TaskEntry).Pluralize());
+        var sql = scripts.GetScriptSql(GetDateRangeTagsListFile);
+        await using var cnn = Context.GetConnection();
+        return await cnn.QueryAsync<TaskEntry>(sql, new
+        {
+            FromDate = fromDate, 
+            ToDate = toDate?.Date.AddDays(1).AddSeconds(-1), 
+            Tags = tagsList
+        });
     }
 
     public TaskEntry? GetBySlug(string slug)

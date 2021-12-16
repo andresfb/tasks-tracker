@@ -8,7 +8,7 @@
         <AssemblyName>tasker</AssemblyName>
         <Company>Andres Bastidas</Company>
         <Product>Personal Programs</Product>
-        <AssemblyVersion>0.01</AssemblyVersion>
+        <AssemblyVersion>0.0.1</AssemblyVersion>
         <NeutralLanguage>en</NeutralLanguage>
     </PropertyGroup>
 

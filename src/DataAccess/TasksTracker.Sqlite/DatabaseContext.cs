@@ -89,6 +89,7 @@ public class DatabaseContext : IDatabaseContext
         {
             Id = Guid.NewGuid(),
             Title = "Personal",
+            IsDefault = false,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
         };
@@ -98,6 +99,7 @@ public class DatabaseContext : IDatabaseContext
         {
             Id = Guid.NewGuid(),
             Title = "Work",
+            IsDefault = true,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
         };

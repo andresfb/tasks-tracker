@@ -2,6 +2,7 @@ create table Tags
 (
     Id        TEXT    not null constraint Tags_pk primary key,
     Title     TEXT    not null,
+    IsDefault INTEGER default 0,
     DeletedAt INTEGER,
     CreatedAt INTEGER not null,
     UpdatedAt INTEGER not null

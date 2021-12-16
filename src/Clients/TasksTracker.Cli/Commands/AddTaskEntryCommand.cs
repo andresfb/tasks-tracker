@@ -8,7 +8,7 @@ using Status = TasksTracker.Contracts.Enums.Status;
 
 namespace TasksTracker.Cli.Commands;
 
-public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
+public class AddTaskEntryCommand : BaseCommand<AddTaskEntryCommand.Settings>
 {
     public class Settings : CommandSettings
     {
@@ -28,24 +28,13 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         public string[] Tags { get; init; } = Array.Empty<string>();
     }
 
-    private readonly ITaskEntryRepository _taskEntryRepository;
-    private readonly List<Tag> _tagList;
-    
-    private bool _promptForInput;
-
-    public AddTaskEntryCommand(
-        ITaskEntryRepository taskEntryRepository, 
-        ITagRepository tagRepository)
-    {
-        _taskEntryRepository = taskEntryRepository 
-                               ?? throw new ArgumentNullException(nameof(taskEntryRepository));
-        
-        _tagList = tagRepository.GetList().ToList();
-    }
+    public AddTaskEntryCommand(ITaskEntryRepository taskEntryRepository, ITagRepository tagRepository) 
+        : base(taskEntryRepository, tagRepository)
+    { }
     
     public override int Execute([NotNull] CommandContext context, [NotNull] Settings settings)
     {
-        _promptForInput = string.IsNullOrEmpty(settings.Title);
+        PromptForInput = string.IsNullOrEmpty(settings.Title);
         
         var title = PromptTitleIfMissing(settings.Title);
         var taskEntry = new TaskEntry()
@@ -54,7 +43,7 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
             Title = title.Trim(),
         };
 
-        var foundTask = _taskEntryRepository.ExistsToday(taskEntry.Slug);
+        var foundTask = TaskEntryRepository.ExistsToday(taskEntry.Slug);
         if (foundTask != Guid.Empty)
         {
             AnsiConsole.WriteLine("");
@@ -69,7 +58,7 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
 
         taskEntry.Notes = notes.Trim();
         taskEntry.Tags = GenTags(tags);
-        taskEntry = _taskEntryRepository.Save(taskEntry);
+        taskEntry = TaskEntryRepository.Save(taskEntry);
         
         AnsiConsole.WriteLine("");
         AnsiConsole.Markup("[green]Task created successfully[/]");
@@ -85,7 +74,16 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         if (!string.IsNullOrEmpty(current)) 
             return current;
 
-        _promptForInput = true;
+        var rule = new Rule("[green]Enter the Task information[/]")
+        {
+            Alignment = Justify.Left
+        };
+        
+        AnsiConsole.WriteLine("");
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine("");
+        
+        PromptForInput = true;
         return AnsiConsole.Prompt(
             new TextPrompt<string>("[deepskyblue1]Task Title:[/]")
                 .Validate(title => 
@@ -101,78 +99,37 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
         if (!string.IsNullOrEmpty(current)) 
             return current;
 
-        return _promptForInput
+        return PromptForInput
             ? AnsiConsole.Prompt(
                 new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Notes:[/]")
                     .AllowEmpty())
             : string.Empty;
     }
-    
-    private IEnumerable<string> PromptTagsIfMissing(string[] tags)
-    {
-        if (tags != Array.Empty<string>()) 
-            return tags;
-
-        if (!_promptForInput) 
-            return tags;
-
-        var response = AnsiConsole.Prompt(
-            new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Tags:[/]")
-                .DefaultValue("Show List")
-                .AllowEmpty()
-        );
-
-        if (string.IsNullOrEmpty(response)) 
-            return Array.Empty<string>();
-
-        if (response.Trim().ToLower() != "show list") 
-            return response.Split(" ");
-        
-        if (!_tagList.Any())
-        {
-            AnsiConsole.WriteLine();
-            AnsiConsole.Markup("[red]No tags found[/]\n");
-            return PromptForTags();
-        }
-        
-        var results = AnsiConsole.Prompt(
-            new MultiSelectionPrompt<string>()
-                .Title("Chose [green]Tags[/] from the list")
-                .NotRequired()
-                .PageSize(10)
-                .MoreChoicesText("[grey](Move up and down to show more tags)[/]")
-                .InstructionsText(
-                    "[grey](Press [blue]<space>[/] to toggle a tag, " + 
-                    "[green]<enter>[/] to accept)[/]")
-                .AddChoices(
-                    _tagList.Select(t => t.Title).ToArray()    
-                ));
-
-        return results.ToArray();
-    }
-
-    private static IEnumerable<string> PromptForTags()
-    {
-        var response = AnsiConsole.Prompt(
-            new TextPrompt<string>("[grey53][[Optional]][/] [deepskyblue1]Tags:[/]")
-                .AllowEmpty()
-        );
-
-        return string.IsNullOrEmpty(response) 
-            ? Array.Empty<string>() 
-            : response.Split(" ");
-    }
 
     private IEnumerable<Tag> GenTags(IEnumerable<string> tags)
     {
         var results = new List<Tag>();
+        var list = tags.ToList();
         
-        foreach (var tag in tags)
+        if (!list.Any())
         {
-            var savedTag = _tagList.FirstOrDefault(t => t.Title.ToLower() == tag.ToLower());
+            var defaultTag = TagList.First(t => t.IsDefault);
+            results.Add(defaultTag);
+            return results;
+        }
+        
+        foreach (var tag in list)
+        {
+            var cleanTag = tag.Trim()
+                .Replace(",", "")
+                .Replace(".", "")
+                .Replace(";", "")
+                .ToLower();
+            
+            var savedTag = TagList.FirstOrDefault(t => t.Title.ToLower() == cleanTag);
             if (savedTag == null)
             {
-                results.Add(new Tag() { Title = tag });
+                results.Add(new Tag() { Title = cleanTag });
                 continue;
             }
             
@@ -184,7 +141,7 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
     
     private void DisplayEntry(Guid entryId)
     {
-        var entry = _taskEntryRepository.Get(entryId);
+        var entry = TaskEntryRepository.Get(entryId);
         var table = new Table()
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Blue)
@@ -202,9 +159,9 @@ public class AddTaskEntryCommand : Command<AddTaskEntryCommand.Settings>
                 $"[green]{entry?.Notes}[/]",
                 $"[green]{string.Join(",", entry?.Tags.Select(t => t.Title).ToList()!)}[/]",
                 $"[green]{entry?.CreatedAt}[/]",
-                $"[green]{entry?.UpdatedAt}[/]"
+                $"[green]{entry?.UpdatedAt}[/]"    
             );
-
+        
         AnsiConsole.Write(table);
     }
 }

@@ -66,6 +66,11 @@
       <EmbeddedResource Include="Queries\TaskEntries\GetBySlugToday.sql" />
       <None Remove="Queries\TaskEntries\ExistsToday.sql" />
       <EmbeddedResource Include="Queries\TaskEntries\ExistsToday.sql" />
+      <None Remove="Queries\TaskEntries\GetFromDateTagsList.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetDateRangeTagsList.sql" />
+      <None Remove="Queries\TaskEntries\GetFromDateList.sql" />
+      <None Remove="Queries\TaskEntries\GetDateRangeList.sql" />
+      <EmbeddedResource Include="Queries\TaskEntries\GetDateRangeList.sql" />
     </ItemGroup>
 
 </Project>
