@@ -10,6 +10,10 @@
         <Product>Personal Programs</Product>
         <AssemblyVersion>0.0.1</AssemblyVersion>
         <NeutralLanguage>en</NeutralLanguage>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>tasker</ToolCommandName>
+        <PackageOutputPath>./packages</PackageOutputPath>
+        <Version>$(AssemblyVersion)</Version>
     </PropertyGroup>
 
     <ItemGroup>
